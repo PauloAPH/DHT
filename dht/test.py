@@ -61,10 +61,10 @@ class Client():
 
 
     def join_dht(self, ip, port):
-        with grpc.insecure_channel(ip + port) as channel:
+        with grpc.insecure_channel("localhost:" + port) as channel:
             stub = dht_pb2_grpc.DHTStub(channel)
             join_req = dht_pb2.Join(ip = self.ip, port = self.port, id = int(self.id))
-            stub.Try_join(join_req)
+            resp = stub.Try_join(join_req)
 
 
 
@@ -91,4 +91,4 @@ if __name__ == "__main__":
     server_dht = Server()
     server_dht.start()
     client_dht = Client(server_dht.ip, server_dht.port, server_dht.node)
-    client_dht.send_hello("localhost:", "50000")
+    client_dht.join_dht("localhost:", "50000")

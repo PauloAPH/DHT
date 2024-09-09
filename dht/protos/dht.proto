@@ -16,11 +16,17 @@ syntax = "proto3";
 option java_multiple_files =  true;
 package DHT;
 
+import "google/protobuf/empty.proto";
+
+
 // Interface exported by the server.
 service DHT {
   rpc Hello(Join) returns (Join) {}
 
-  rpc Try_Join(Join) returns (Ok) {}
+  rpc Try_Join(Join) returns (google.protobuf.Empty) {}
+
+  rpc Join_ok(JoinOk) returns (google.protobuf.Empty) {}
+
 }
 
 // enum Tipo{
@@ -32,6 +38,17 @@ message Join {
   string ip = 1;
   string port = 2;
   int32 id = 3; 
+}
+
+message JoinOk {
+  string next_id = 1;
+  string next_adress = 2;
+  string pre_id = 3;
+  string pre_adress = 4;
+}
+
+message JoinResponse{
+  string code = 1;
 }
 
 message Ok {

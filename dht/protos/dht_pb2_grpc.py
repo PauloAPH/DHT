@@ -3,6 +3,7 @@
 import grpc
 import warnings
 
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 from protos import dht_pb2 as protos_dot_dht__pb2
 
 GRPC_GENERATED_VERSION = '1.65.1'
@@ -45,6 +46,16 @@ class DHTStub(object):
                 request_serializer=protos_dot_dht__pb2.Join.SerializeToString,
                 response_deserializer=protos_dot_dht__pb2.Join.FromString,
                 _registered_method=True)
+        self.Try_Join = channel.unary_unary(
+                '/DHT.DHT/Try_Join',
+                request_serializer=protos_dot_dht__pb2.Join.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.Join_ok = channel.unary_unary(
+                '/DHT.DHT/Join_ok',
+                request_serializer=protos_dot_dht__pb2.JoinOk.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
 
 
 class DHTServicer(object):
@@ -57,6 +68,18 @@ class DHTServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Try_Join(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Join_ok(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DHTServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -64,6 +87,16 @@ def add_DHTServicer_to_server(servicer, server):
                     servicer.Hello,
                     request_deserializer=protos_dot_dht__pb2.Join.FromString,
                     response_serializer=protos_dot_dht__pb2.Join.SerializeToString,
+            ),
+            'Try_Join': grpc.unary_unary_rpc_method_handler(
+                    servicer.Try_Join,
+                    request_deserializer=protos_dot_dht__pb2.Join.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'Join_ok': grpc.unary_unary_rpc_method_handler(
+                    servicer.Join_ok,
+                    request_deserializer=protos_dot_dht__pb2.JoinOk.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -94,6 +127,60 @@ class DHT(object):
             '/DHT.DHT/Hello',
             protos_dot_dht__pb2.Join.SerializeToString,
             protos_dot_dht__pb2.Join.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Try_Join(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/DHT.DHT/Try_Join',
+            protos_dot_dht__pb2.Join.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Join_ok(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/DHT.DHT/Join_ok',
+            protos_dot_dht__pb2.JoinOk.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
             insecure,

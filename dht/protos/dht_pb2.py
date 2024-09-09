@@ -12,9 +12,10 @@ from google.protobuf.internal import builder as _builder
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10protos/dht.proto\x12\x03\x44HT\",\n\x04Join\x12\n\n\x02ip\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\t\x12\n\n\x02id\x18\x03 \x01(\x05\x32&\n\x03\x44HT\x12\x1f\n\x05Hello\x12\t.DHT.Join\x1a\t.DHT.Join\"\x00\x42\x02P\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10protos/dht.proto\x12\x03\x44HT\x1a\x1bgoogle/protobuf/empty.proto\",\n\x04Join\x12\n\n\x02ip\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\t\x12\n\n\x02id\x18\x03 \x01(\x05\"R\n\x06JoinOk\x12\x0f\n\x07next_id\x18\x01 \x01(\t\x12\x13\n\x0bnext_adress\x18\x02 \x01(\t\x12\x0e\n\x06pre_id\x18\x03 \x01(\t\x12\x12\n\npre_adress\x18\x04 \x01(\t\"\x1c\n\x0cJoinResponse\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\"\x14\n\x02Ok\x12\x0e\n\x06status\x18\x01 \x01(\x05\x32\x89\x01\n\x03\x44HT\x12\x1f\n\x05Hello\x12\t.DHT.Join\x1a\t.DHT.Join\"\x00\x12/\n\x08Try_Join\x12\t.DHT.Join\x1a\x16.google.protobuf.Empty\"\x00\x12\x30\n\x07Join_ok\x12\x0b.DHT.JoinOk\x1a\x16.google.protobuf.Empty\"\x00\x42\x02P\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -22,8 +23,14 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'protos.dht_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'P\001'
-  _globals['_JOIN']._serialized_start=25
-  _globals['_JOIN']._serialized_end=69
-  _globals['_DHT']._serialized_start=71
-  _globals['_DHT']._serialized_end=109
+  _globals['_JOIN']._serialized_start=54
+  _globals['_JOIN']._serialized_end=98
+  _globals['_JOINOK']._serialized_start=100
+  _globals['_JOINOK']._serialized_end=182
+  _globals['_JOINRESPONSE']._serialized_start=184
+  _globals['_JOINRESPONSE']._serialized_end=212
+  _globals['_OK']._serialized_start=214
+  _globals['_OK']._serialized_end=234
+  _globals['_DHT']._serialized_start=237
+  _globals['_DHT']._serialized_end=374
 # @@protoc_insertion_point(module_scope)
