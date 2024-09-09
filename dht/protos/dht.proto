@@ -27,6 +27,8 @@ service DHT {
 
   rpc Join_ok(JoinOk) returns (google.protobuf.Empty) {}
 
+  rpc Update_Next(Join) returns (google.protobuf.Empty) {}
+
 }
 
 // enum Tipo{
@@ -41,10 +43,12 @@ message Join {
 }
 
 message JoinOk {
-  string next_id = 1;
-  string next_adress = 2;
-  string pre_id = 3;
-  string pre_adress = 4;
+  int32 next_id = 1;
+  string next_ip = 2;
+  string next_port = 3;
+  int32 pre_id = 4;
+  string pre_ip = 5;
+  string pre_port = 6;
 }
 
 message JoinResponse{

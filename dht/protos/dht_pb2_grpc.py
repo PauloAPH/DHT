@@ -56,6 +56,11 @@ class DHTStub(object):
                 request_serializer=protos_dot_dht__pb2.JoinOk.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
+        self.Update_Next = channel.unary_unary(
+                '/DHT.DHT/Update_Next',
+                request_serializer=protos_dot_dht__pb2.Join.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
 
 
 class DHTServicer(object):
@@ -80,6 +85,12 @@ class DHTServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Update_Next(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DHTServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -96,6 +107,11 @@ def add_DHTServicer_to_server(servicer, server):
             'Join_ok': grpc.unary_unary_rpc_method_handler(
                     servicer.Join_ok,
                     request_deserializer=protos_dot_dht__pb2.JoinOk.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'Update_Next': grpc.unary_unary_rpc_method_handler(
+                    servicer.Update_Next,
+                    request_deserializer=protos_dot_dht__pb2.Join.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
@@ -180,6 +196,33 @@ class DHT(object):
             target,
             '/DHT.DHT/Join_ok',
             protos_dot_dht__pb2.JoinOk.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Update_Next(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/DHT.DHT/Update_Next',
+            protos_dot_dht__pb2.Join.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
