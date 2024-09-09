@@ -18,18 +18,25 @@ package DHT;
 
 // Interface exported by the server.
 service DHT {
-  // // Create a channel
-  // rpc CreateChannel(Channels) returns (Response) {}
+  rpc Hello(Join) returns (Join) {}
 
-  // //List all channels avaliable
-  // rpc ListChannels(Response) returns (stream Channels) {}
-
+  rpc Try_Join(Join) returns (Ok) {}
 }
 
 // enum Tipo{
 //   SIMPLES = 0;
 //   MULTIPLO = 1;
 // }
+
+message Join {
+  string ip = 1;
+  string port = 2;
+  int32 id = 3; 
+}
+
+message Ok {
+  int32 status = 1;
+}
 
 // message Credentials {
 //   string id = 1;

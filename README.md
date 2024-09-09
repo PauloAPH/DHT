@@ -19,5 +19,5 @@
 ```
 #### Gerar protobuf e stubs em python
 ```
- python3 -m grpc_tools.protoc -I. --python_out=python  --grpc_python_out=python  protos/dht.proto
+ python3 -m grpc_tools.protoc -I. --python_out=.  --grpc_python_out=.  protos/dht.proto
 ```

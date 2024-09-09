@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10protos/dht.proto\x12\x03\x44HT2\x05\n\x03\x44HTB\x02P\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10protos/dht.proto\x12\x03\x44HT\",\n\x04Join\x12\n\n\x02ip\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\t\x12\n\n\x02id\x18\x03 \x01(\x05\x32&\n\x03\x44HT\x12\x1f\n\x05Hello\x12\t.DHT.Join\x1a\t.DHT.Join\"\x00\x42\x02P\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -22,6 +22,8 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'protos.dht_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'P\001'
-  _globals['_DHT']._serialized_start=25
-  _globals['_DHT']._serialized_end=30
+  _globals['_JOIN']._serialized_start=25
+  _globals['_JOIN']._serialized_end=69
+  _globals['_DHT']._serialized_start=71
+  _globals['_DHT']._serialized_end=109
 # @@protoc_insertion_point(module_scope)

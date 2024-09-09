@@ -3,6 +3,7 @@
 import grpc
 import warnings
 
+from protos import dht_pb2 as protos_dot_dht__pb2
 
 GRPC_GENERATED_VERSION = '1.65.1'
 GRPC_VERSION = grpc.__version__
@@ -31,8 +32,6 @@ if _version_not_supported:
 
 class DHTStub(object):
     """Interface exported by the server.
-    // Create a channel
-    rpc CreateChannel(Channels) returns (Response) {}
     """
 
     def __init__(self, channel):
@@ -41,17 +40,31 @@ class DHTStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.Hello = channel.unary_unary(
+                '/DHT.DHT/Hello',
+                request_serializer=protos_dot_dht__pb2.Join.SerializeToString,
+                response_deserializer=protos_dot_dht__pb2.Join.FromString,
+                _registered_method=True)
 
 
 class DHTServicer(object):
     """Interface exported by the server.
-    // Create a channel
-    rpc CreateChannel(Channels) returns (Response) {}
     """
+
+    def Hello(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
 
 def add_DHTServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'Hello': grpc.unary_unary_rpc_method_handler(
+                    servicer.Hello,
+                    request_deserializer=protos_dot_dht__pb2.Join.FromString,
+                    response_serializer=protos_dot_dht__pb2.Join.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'DHT.DHT', rpc_method_handlers)
@@ -62,6 +75,31 @@ def add_DHTServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class DHT(object):
     """Interface exported by the server.
-    // Create a channel
-    rpc CreateChannel(Channels) returns (Response) {}
     """
+
+    @staticmethod
+    def Hello(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/DHT.DHT/Hello',
+            protos_dot_dht__pb2.Join.SerializeToString,
+            protos_dot_dht__pb2.Join.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)

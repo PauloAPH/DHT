@@ -51,8 +51,9 @@ class Client():
         self.id = id
         
 
-    def send_hello(self):
-        with grpc.insecure_channel("localhost:" + self.port) as channel:
+    def send_hello(self, ip, port):
+        print(port)
+        with grpc.insecure_channel("localhost:" + port) as channel:
             stub = dht_pb2_grpc.DHTStub(channel)
             node = dht_pb2.Join(ip = "localhost:", port = self.port, id = int(self.id))
             response = stub.Hello(node)
@@ -79,12 +80,9 @@ class Server():
             DHTServicer(self.port, self.node, "a", "a"), self.grpc_server
         )
         self.grpc_server.add_insecure_port("[::]:" + self.port)
+        
+    def start(self):
         self.grpc_server.start()
-        self.grpc_server.wait_for_termination()
-
-        
-        
-        
 
 
 if __name__ == "__main__":
@@ -93,4 +91,4 @@ if __name__ == "__main__":
     server_dht = Server()
     server_dht.start()
     client_dht = Client(server_dht.ip, server_dht.port, server_dht.node)
-    #client_dht.init()
+    client_dht.send_hello("localhost:", "50000")
