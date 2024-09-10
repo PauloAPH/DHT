@@ -29,6 +29,8 @@ service DHT {
 
   rpc Update_Next(Join) returns (google.protobuf.Empty) {}
 
+  rpc Update_Pre(Join) returns (google.protobuf.Empty) {}
+
 }
 
 // enum Tipo{

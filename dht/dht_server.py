@@ -13,7 +13,9 @@
 # limitations under the License.
 """The Python implementation of the gRPC DHT server."""
 
+import asyncio
 from concurrent import futures
+import time
 
 import grpc
 import logging
@@ -41,12 +43,8 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         self.p_port = ""
 
     def print_all(self):
-        print(self.n_id)
-        print(self.n_ip)
-        print(self.n_port)
-        print(self.p_id)
-        print(self.p_ip)
-        print(self.p_port)
+        print("Next node id: " + str(self.n_id) + " Next node adress: "+ self.n_ip + self.n_port)
+        print("Previuos node id: " + str(self.p_id) + " Previuos node adress: "+ self.p_ip + self.p_port)
         
 
     def Hello(self, request, context):
@@ -97,12 +95,6 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         self.p_port = request.pre_port 
         client_dht = Client(self.ip, self.port, self.id)
         client_dht.update_previous(self.p_ip, self.p_port, self.p_id)
-        print(self.n_id)
-        print(self.n_ip)
-        print(self.n_port)
-        print(self.p_id)
-        print(self.p_ip)
-        print(self.p_port)
         return empty_pb2.Empty()
     
     def Update_Next(self, request, context):
@@ -173,13 +165,14 @@ class Server():
         self.ip = ip
         self.port = port
         self.id = id
-
         self.grpc_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-        dht_pb2_grpc.add_DHTServicer_to_server(
-            DHTServicer(self.ip, self.port, self.id), self.grpc_server
-        )
+        self.servicer = DHTServicer(self.ip, self.port, self.id)
+        dht_pb2_grpc.add_DHTServicer_to_server( self.servicer, self.grpc_server)
         self.grpc_server.add_insecure_port("[::]:" + self.port)
 
+
+    def print_stat(self):
+        self.servicer.print_all()
 
     def start(self):
         self.grpc_server.start()
@@ -201,10 +194,16 @@ if __name__ == "__main__":
         server_dht.start()
         res = response.split(":")
         client_dht.join_dht("localhost:", res[1])
-        server_dht.wait()
+        # server_dht.wait()
 
     else: 
         server_dht = Server(ip, port, node)
         server_dht.start()
-        server_dht.wait()
+        # server_dht.wait()
+
+    while 1:
+        time.sleep(50)
+        server_dht.print_stat()
+        
+
 
