@@ -21,15 +21,15 @@ import "google/protobuf/empty.proto";
 
 // Interface exported by the server.
 service DHT {
-  rpc Hello(Join) returns (Join) {}
+  rpc hello(Join) returns (Join) {}
 
-  rpc Try_Join(Join) returns (google.protobuf.Empty) {}
+  rpc try_to_join(Join) returns (google.protobuf.Empty) {}
 
-  rpc Join_ok(JoinOk) returns (google.protobuf.Empty) {}
+  rpc join_response(JoinOk) returns (google.protobuf.Empty) {}
 
-  rpc Update_Next(Join) returns (google.protobuf.Empty) {}
+  rpc uptade_next_node_params(Join) returns (google.protobuf.Empty) {}
 
-  rpc Update_Pre(Join) returns (google.protobuf.Empty) {}
+  rpc uptade_previuos_node_params(Join) returns (google.protobuf.Empty) {}
 
 }
 
@@ -53,16 +53,4 @@ message JoinOk {
   string pre_port = 6;
 }
 
-message JoinResponse{
-  string code = 1;
-}
-
-message Ok {
-  int32 status = 1;
-}
-
-// message Credentials {
-//   string id = 1;
-//   string password = 2;
-// }
 

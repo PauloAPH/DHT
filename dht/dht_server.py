@@ -13,7 +13,6 @@
 # limitations under the License.
 """The Python implementation of the gRPC DHT server."""
 
-import asyncio
 from concurrent import futures
 import time
 
@@ -43,15 +42,25 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         self.p_port = ""
 
     def print_all(self):
-        print("Next node id: " + str(self.n_id) + " Next node adress: "+ self.n_ip + self.n_port)
-        print("Previuos node id: " + str(self.p_id) + " Previuos node adress: "+ self.p_ip + self.p_port)
-        
+        print("Next node id: " + str(self.n_id) + " adress: "+ self.n_ip + self.n_port)
+        print("Previuos node id: " + str(self.p_id) + " adress: "+ self.p_ip + self.p_port)
 
-    def Hello(self, request, context):
+    def get_params(self):
+        return {'ip' : self.ip, 
+                'port' : self.port, 
+                'id' : self.id, 
+                'n_id' : self.n_id, 
+                'n_ip' : self.n_ip, 
+                'n_port' : self.n_port, 
+                'p_id' : self.p_id, 
+                'p_ip' : self.p_ip, 
+                'p_port' : self.p_port}
+        
+    def hello(self, request, context):
         print("respondendo node " + request.port)
         return dht_pb2.Join(ip = "localhost:", port = self.port, id = int(self.id))
     
-    def Try_Join(self, request, context):
+    def try_to_join(self, request, context):
         print("No " + request.port + " tentando entrar na rede")
         if self.p_id == 0:
             print("Enviando resposta")
@@ -85,7 +94,7 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         return empty_pb2.Empty()
 
     
-    def Join_ok(self, request, context):
+    def join_response(self, request, context):
         print("Resposta de entrada na rede recebida")
         self.n_id  = request.next_id 
         self.n_ip = request.next_ip
@@ -97,12 +106,20 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         client_dht.update_previous(self.p_ip, self.p_port, self.p_id)
         return empty_pb2.Empty()
     
-    def Update_Next(self, request, context):
+    def uptade_next_node_params(self, request, context):
         print("Recebendo pedido de atualização")
         self.n_id  = request.id
         self.n_ip = request.ip 
         self.n_port = request.port
         return empty_pb2.Empty()
+    
+    def uptade_previuos_node_params(self, request, context):
+        print("Recebendo pedido de atualização")
+        self.p_id  = request.id
+        self.p_ip = request.ip 
+        self.p_port = request.port
+        return empty_pb2.Empty()
+
 
 class Client():
     def __init__(self, ip, port, id):
@@ -115,7 +132,7 @@ class Client():
         with grpc.insecure_channel(p_ip + p_port) as channel:
             stub = dht_pb2_grpc.DHTStub(channel)
             node = dht_pb2.Join(ip = self.ip, port = self.port, id = self.id)
-            stub.Update_Next(node)
+            stub.uptade_next_node_params(node)
 
     def send_hello(self):
         with open("/home/paulo/sist_distribuidos/DHT/dht/dhtList.txt", "r") as file:
@@ -127,14 +144,14 @@ class Client():
                     stub = dht_pb2_grpc.DHTStub(channel)
                     node = dht_pb2.Join(ip = "localhost:", port = self.port, id = int(self.id))
                     try:
-                        response = stub.Hello(node)
+                        response = stub.hello(node)
+                    except grpc.RpcError as rpc_error:
+                        print(f"Tentando o prox host")
+                    else:
                         if response.port:
-                            print(f"Greeter client received: {response.port}")
                             port_ok = port
                             ok = 1
                             break
-                    except grpc.RpcError as rpc_error:
-                        print(f"Tentando o prox host")
             if ok == 0:
                 print("nenhum nó encontrado, iniciando dht")
                 return ""
@@ -147,7 +164,7 @@ class Client():
         with grpc.insecure_channel(ip+port) as channel:
             stub = dht_pb2_grpc.DHTStub(channel)
             node = dht_pb2.Join(ip = "localhost:", port = self.port, id = self.id)
-            stub.Try_Join(node)
+            stub.try_to_join(node)
 
 
     def join_response(self, n_id, n_ip, n_port, p_id, p_ip, p_port):
@@ -155,21 +172,55 @@ class Client():
         with grpc.insecure_channel(self.ip + self.port) as channel:
             stub = dht_pb2_grpc.DHTStub(channel)
             join_data = dht_pb2.JoinOk(next_id = n_id, next_ip = n_ip, next_port = n_port, pre_id = p_id, pre_ip = p_ip, pre_port = p_port)
-            stub.Join_ok(join_data)
+            stub.join_response(join_data)
 
+    def leave_dht(n_ip, n_port, n_id, p_ip, p_port, p_id):
+        print("Saindo da rede DHT")
+        to_previous = dht_pb2.Join(ip = n_ip, port = n_port, id = n_id)
+        to_next = dht_pb2.Join(ip = p_ip, port = p_port, id = p_id)
+        with grpc.insecure_channel(p_ip + p_port) as channel:
+            stub = dht_pb2_grpc.DHTStub(channel)
+            stub.uptade_next_node_params(to_previous)
+        with grpc.insecure_channel(n_ip + n_port) as channel:
+            stub = dht_pb2_grpc.DHTStub(channel)
+            stub.uptade_previuos_node_params(to_next)
 
-
+    
 
 class Server():   
     def __init__(self, ip, port, id):
         self.ip = ip
         self.port = port
         self.id = id
+        self.params_map = {'ip' : ip, 
+                           'port' : port, 
+                           'id' : id, 
+                           'n_id' : 0, 
+                           'n_ip' : "", 
+                           'n_port' : "", 
+                           'p_id' : 0, 
+                           'p_ip' : "", 
+                           'p_port' : ""}
+
         self.grpc_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         self.servicer = DHTServicer(self.ip, self.port, self.id)
-        dht_pb2_grpc.add_DHTServicer_to_server( self.servicer, self.grpc_server)
+        dht_pb2_grpc.add_DHTServicer_to_server(self.servicer, self.grpc_server)
         self.grpc_server.add_insecure_port("[::]:" + self.port)
 
+    def update_params(self):
+        self.params_map = self.servicer.get_params()
+
+    def leave_dht(self):
+        print("Saindo da rede DHT")
+        self.update_params()
+        to_previous = dht_pb2.Join(ip = self.params_map['n_ip'], port = self.params_map['n_port'], id = self.params_map['n_id'])
+        to_next = dht_pb2.Join(ip = self.params_map['p_ip'], port = self.params_map['p_port'], id = self.params_map['p_id'])
+        with grpc.insecure_channel(self.params_map['p_ip'] + self.params_map['p_port']) as channel:
+            stub = dht_pb2_grpc.DHTStub(channel)
+            stub.uptade_next_node_params(to_previous)
+        with grpc.insecure_channel(self.params_map['n_ip'] + self.params_map['n_port']) as channel:
+            stub = dht_pb2_grpc.DHTStub(channel)
+            stub.uptade_previuos_node_params(to_next)
 
     def print_stat(self):
         self.servicer.print_all()
@@ -186,24 +237,25 @@ if __name__ == "__main__":
     # ip = input("Entre com IP ")
     ip = "localhost:"
     port  = input("Entre com a porta ")
-    node = int(input("Entre com o ID do node "))
-    client_dht = Client(ip, port, node)
+    id = int(input("Entre com o ID do node "))
+    client_dht = Client(ip, port, id)
     response = client_dht.send_hello()
+
     if response:
-        server_dht = Server(ip, port, node)
+        server_dht = Server(ip, port, id)
         server_dht.start()
         res = response.split(":")
         client_dht.join_dht("localhost:", res[1])
-        # server_dht.wait()
-
     else: 
-        server_dht = Server(ip, port, node)
+        server_dht = Server(ip, port, id)
         server_dht.start()
-        # server_dht.wait()
 
-    while 1:
-        time.sleep(50)
-        server_dht.print_stat()
+    try:
+        while True:
+            time.sleep(50)
+            server_dht.print_stat()
+    except KeyboardInterrupt:
+        server_dht.leave_dht()
         
 
 

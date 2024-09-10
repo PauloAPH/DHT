@@ -41,23 +41,28 @@ class DHTStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.Hello = channel.unary_unary(
-                '/DHT.DHT/Hello',
+        self.hello = channel.unary_unary(
+                '/DHT.DHT/hello',
                 request_serializer=protos_dot_dht__pb2.Join.SerializeToString,
                 response_deserializer=protos_dot_dht__pb2.Join.FromString,
                 _registered_method=True)
-        self.Try_Join = channel.unary_unary(
-                '/DHT.DHT/Try_Join',
+        self.try_to_join = channel.unary_unary(
+                '/DHT.DHT/try_to_join',
                 request_serializer=protos_dot_dht__pb2.Join.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
-        self.Join_ok = channel.unary_unary(
-                '/DHT.DHT/Join_ok',
+        self.join_response = channel.unary_unary(
+                '/DHT.DHT/join_response',
                 request_serializer=protos_dot_dht__pb2.JoinOk.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
-        self.Update_Next = channel.unary_unary(
-                '/DHT.DHT/Update_Next',
+        self.uptade_next_node_params = channel.unary_unary(
+                '/DHT.DHT/uptade_next_node_params',
+                request_serializer=protos_dot_dht__pb2.Join.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.uptade_previuos_node_params = channel.unary_unary(
+                '/DHT.DHT/uptade_previuos_node_params',
                 request_serializer=protos_dot_dht__pb2.Join.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
@@ -67,25 +72,31 @@ class DHTServicer(object):
     """Interface exported by the server.
     """
 
-    def Hello(self, request, context):
+    def hello(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Try_Join(self, request, context):
+    def try_to_join(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Join_ok(self, request, context):
+    def join_response(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Update_Next(self, request, context):
+    def uptade_next_node_params(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def uptade_previuos_node_params(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -94,23 +105,28 @@ class DHTServicer(object):
 
 def add_DHTServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Hello': grpc.unary_unary_rpc_method_handler(
-                    servicer.Hello,
+            'hello': grpc.unary_unary_rpc_method_handler(
+                    servicer.hello,
                     request_deserializer=protos_dot_dht__pb2.Join.FromString,
                     response_serializer=protos_dot_dht__pb2.Join.SerializeToString,
             ),
-            'Try_Join': grpc.unary_unary_rpc_method_handler(
-                    servicer.Try_Join,
+            'try_to_join': grpc.unary_unary_rpc_method_handler(
+                    servicer.try_to_join,
                     request_deserializer=protos_dot_dht__pb2.Join.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'Join_ok': grpc.unary_unary_rpc_method_handler(
-                    servicer.Join_ok,
+            'join_response': grpc.unary_unary_rpc_method_handler(
+                    servicer.join_response,
                     request_deserializer=protos_dot_dht__pb2.JoinOk.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
-            'Update_Next': grpc.unary_unary_rpc_method_handler(
-                    servicer.Update_Next,
+            'uptade_next_node_params': grpc.unary_unary_rpc_method_handler(
+                    servicer.uptade_next_node_params,
+                    request_deserializer=protos_dot_dht__pb2.Join.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'uptade_previuos_node_params': grpc.unary_unary_rpc_method_handler(
+                    servicer.uptade_previuos_node_params,
                     request_deserializer=protos_dot_dht__pb2.Join.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
@@ -127,7 +143,7 @@ class DHT(object):
     """
 
     @staticmethod
-    def Hello(request,
+    def hello(request,
             target,
             options=(),
             channel_credentials=None,
@@ -140,7 +156,7 @@ class DHT(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/DHT.DHT/Hello',
+            '/DHT.DHT/hello',
             protos_dot_dht__pb2.Join.SerializeToString,
             protos_dot_dht__pb2.Join.FromString,
             options,
@@ -154,7 +170,7 @@ class DHT(object):
             _registered_method=True)
 
     @staticmethod
-    def Try_Join(request,
+    def try_to_join(request,
             target,
             options=(),
             channel_credentials=None,
@@ -167,7 +183,7 @@ class DHT(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/DHT.DHT/Try_Join',
+            '/DHT.DHT/try_to_join',
             protos_dot_dht__pb2.Join.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
@@ -181,7 +197,7 @@ class DHT(object):
             _registered_method=True)
 
     @staticmethod
-    def Join_ok(request,
+    def join_response(request,
             target,
             options=(),
             channel_credentials=None,
@@ -194,7 +210,7 @@ class DHT(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/DHT.DHT/Join_ok',
+            '/DHT.DHT/join_response',
             protos_dot_dht__pb2.JoinOk.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
@@ -208,7 +224,7 @@ class DHT(object):
             _registered_method=True)
 
     @staticmethod
-    def Update_Next(request,
+    def uptade_next_node_params(request,
             target,
             options=(),
             channel_credentials=None,
@@ -221,7 +237,34 @@ class DHT(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/DHT.DHT/Update_Next',
+            '/DHT.DHT/uptade_next_node_params',
+            protos_dot_dht__pb2.Join.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def uptade_previuos_node_params(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/DHT.DHT/uptade_previuos_node_params',
             protos_dot_dht__pb2.Join.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,

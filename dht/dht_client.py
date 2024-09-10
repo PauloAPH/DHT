@@ -30,7 +30,7 @@ class Client():
 
     def send_hello(stub):
         node = dht_pb2.Node(adress = "1")
-        response = stub.Hello(node)
+        response = stub.hello(node)
         print(response.adress)
 
 
