@@ -62,19 +62,23 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
             self.p_id = request.id
             self.p_ip =  request.ip
             self.p_port = request.port
-            print(self.n_id)
-            print(self.n_ip)
-            print(self.n_port)
-            print(self.p_id)
-            print(self.p_ip)
-            print(self.p_port)
-        elif (request.id > self.p_id and request.id < self.id):
+            self.print_all()
+
+        elif request.id > self.p_id and request.id < self.id:
             print("Enviando resposta 2")
             client_dht = Client(request.ip, request.port, request.id)
             client_dht.join_response(self.id, self.ip, self.port, self.p_id, self.p_ip, self.p_port)
-            # self.p_id = request.id
-            # self.p_ip =  request.ip
-            # self.p_port = request.port            
+            self.p_id = request.id
+            self.p_ip =  request.ip
+            self.p_port = request.port           
+
+        elif  self.p_id > self.id and request.id > self.id:
+            print("Enviando resposta 3")
+            client_dht = Client(request.ip, request.port, request.id)
+            client_dht.join_response(self.id, self.ip, self.port, self.p_id, self.p_ip, self.p_port)
+            self.p_id = request.id
+            self.p_ip =  request.ip
+            self.p_port = request.port  
 
         else:
             print("Encaminhando req")
@@ -122,7 +126,7 @@ class Client():
             stub.Update_Next(node)
 
     def send_hello(self):
-        with open("dhtList.txt", "r") as file:
+        with open("/home/paulo/sist_distribuidos/DHT/dht/dhtList.txt", "r") as file:
             ports = file.readlines()
             ports = [name.strip() for name in ports]  
             ok = 0
@@ -146,10 +150,11 @@ class Client():
                 print("no encontrado" + port_ok)
                 return port_ok
 
-    def join_dht(self, adress):
-        with grpc.insecure_channel(adress) as channel:
+    def join_dht(self, ip, port):
+        print(ip+port)
+        with grpc.insecure_channel(ip+port) as channel:
             stub = dht_pb2_grpc.DHTStub(channel)
-            node = dht_pb2.Join(ip = "localhost:", port = self.port, id = int(self.id))
+            node = dht_pb2.Join(ip = "localhost:", port = self.port, id = self.id)
             stub.Try_Join(node)
 
 
@@ -194,7 +199,8 @@ if __name__ == "__main__":
     if response:
         server_dht = Server(ip, port, node)
         server_dht.start()
-        client_dht.join_dht(response)
+        res = response.split(":")
+        client_dht.join_dht("localhost:", res[1])
         server_dht.wait()
 
     else: 
@@ -202,4 +208,3 @@ if __name__ == "__main__":
         server_dht.start()
         server_dht.wait()
 
-    #client_dht.send_hello("localhost:", "50000")
