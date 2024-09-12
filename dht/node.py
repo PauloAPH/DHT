@@ -79,7 +79,8 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
             self.p_ip =  request.ip
             self.p_port = request.port           
 
-        elif  self.p_id > self.id and request.id > self.id:
+        # p = 50 self = 30 r = 40,
+        elif self.p_id > request.id and request.id < self.id:
             print("Enviando resposta 3")
             client_dht = Node(request.ip, request.port, request.id)
             client_dht.join_response(self.id, self.ip, self.port, self.p_id, self.p_ip, self.p_port)
@@ -141,17 +142,7 @@ class Node():
     def update_params(self):
         self.params_map = self.servicer.get_params()
 
-    def leave_dht(self):
-        print("Saindo da rede DHT")
-        self.update_params()
-        to_previous = dht_pb2.Join(ip = self.params_map['n_ip'], port = self.params_map['n_port'], id = self.params_map['n_id'])
-        to_next = dht_pb2.Join(ip = self.params_map['p_ip'], port = self.params_map['p_port'], id = self.params_map['p_id'])
-        with grpc.insecure_channel(self.params_map['p_ip'] + self.params_map['p_port']) as channel:
-            stub = dht_pb2_grpc.DHTStub(channel)
-            stub.uptade_next_node_params(to_previous)
-        with grpc.insecure_channel(self.params_map['n_ip'] + self.params_map['n_port']) as channel:
-            stub = dht_pb2_grpc.DHTStub(channel)
-            stub.uptade_previuos_node_params(to_next)
+  
 
     def print_stat(self):
         self.servicer.print_all()
@@ -216,14 +207,15 @@ class Node():
             join_data = dht_pb2.JoinOk(next_id = n_id, next_ip = n_ip, next_port = n_port, pre_id = p_id, pre_ip = p_ip, pre_port = p_port)
             stub.join_response(join_data)
 
-    def leave_dht(n_ip, n_port, n_id, p_ip, p_port, p_id):
+    def leave_dht(self):
         print("Saindo da rede DHT")
-        to_previous = dht_pb2.Join(ip = n_ip, port = n_port, id = n_id)
-        to_next = dht_pb2.Join(ip = p_ip, port = p_port, id = p_id)
-        with grpc.insecure_channel(p_ip + p_port) as channel:
+        self.update_params()
+        to_previous = dht_pb2.Join(ip = self.params_map['n_ip'], port = self.params_map['n_port'], id = self.params_map['n_id'])
+        to_next = dht_pb2.Join(ip = self.params_map['p_ip'], port = self.params_map['p_port'], id = self.params_map['p_id'])
+        with grpc.insecure_channel(self.params_map['p_ip'] + self.params_map['p_port']) as channel:
             stub = dht_pb2_grpc.DHTStub(channel)
             stub.uptade_next_node_params(to_previous)
-        with grpc.insecure_channel(n_ip + n_port) as channel:
+        with grpc.insecure_channel(self.params_map['n_ip'] + self.params_map['n_port']) as channel:
             stub = dht_pb2_grpc.DHTStub(channel)
             stub.uptade_previuos_node_params(to_next)
 
@@ -234,7 +226,7 @@ if __name__ == "__main__":
     ip = "localhost:"
     port  = input("Entre com a porta ")
     id = int(input("Entre com o ID do node "))
-    
+
     client_dht = Node(ip, port, id)
     response = client_dht.send_hello()
 
