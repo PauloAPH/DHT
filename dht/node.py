@@ -11,19 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The Python implementation of the gRPC DHT server."""
+
+import grpc
+import hashlib
+import logging
+import os
+import time
 
 from concurrent import futures
-import time
-import hashlib
-import grpc
-import curses
-import os
-import logging
-
 from google.protobuf import empty_pb2
-
-
 from protos import dht_pb2
 from protos import dht_pb2_grpc
 
@@ -69,8 +65,8 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
 
     def print_all(self):
         print("NODE: "+  str(self.id))
-        print("Next node id: " + str(self.n_id) + " adress: "+ self.n_ip + self.n_port)
-        print("Previuos node id: " + str(self.p_id) + " adress: "+ self.p_ip + self.p_port)
+        print("Next node id: " + str(self.n_id) + " address: "+ self.n_ip + self.n_port)
+        print("Previous node id: " + str(self.p_id) + " address: "+ self.p_ip + self.p_port)
 
     def get_params(self):
         return {'ip' : self.ip, 
@@ -210,8 +206,8 @@ class Node():
 
     def print_stat(self):
         print("NODE: "+  str(self.id))
-        print("Next node id: " + str(self.params_map["n_id"]) + " adress: "+ self.params_map["n_ip"] + self.params_map["n_port"])
-        print("Previuos node id: " + str(self.params_map["p_id"]) + " adress: "+ self.params_map["p_ip"] + self.params_map["p_port"])
+        print("Next node id: " + str(self.params_map["n_id"]) + " address: "+ self.params_map["n_ip"] + self.params_map["n_port"])
+        print("Previous node id: " + str(self.params_map["p_id"]) + " address: "+ self.params_map["p_ip"] + self.params_map["p_port"])
 
     def start(self):
         self.grpc_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
