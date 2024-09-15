@@ -17,6 +17,8 @@ from concurrent import futures
 import time
 import hashlib
 import grpc
+import curses
+import os
 import logging
 
 from google.protobuf import empty_pb2
@@ -26,8 +28,16 @@ from protos import dht_pb2
 from protos import dht_pb2_grpc
 
 
-def hash_helper(ip, port):
-    id = int.from_bytes(hashlib.sha256((ip+port).encode('utf-8')).digest()[:4], 'little')
+def save_file(node_id, file_id, data):
+    file_name = str(file_id) + ".txt"
+    folder = "DHT_NODE_" + str(node_id)
+    os.makedirs(folder, exist_ok=True)
+    file_path = os.path.join(folder, file_name)
+    with open(file_path, 'w') as file:
+        file.write(data)
+
+def hash_helper(data):
+    id = int.from_bytes(hashlib.sha256(data.encode('utf-8')).digest()[:4], 'little')
     print(id)
     return id
 
@@ -40,10 +50,10 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         self.port = port
         self.id = id
 
-        self.n_id =  0
+        self.n_id =  id
         self.n_ip =  ""
         self.n_port = ""
-        self.p_id = 0
+        self.p_id = id
         self.p_ip =  ""
         self.p_port = ""
 
@@ -69,7 +79,7 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
     
     def try_to_join(self, request, context):
         print("No " + request.port + " tentando entrar na rede")
-        if self.p_id == 0:
+        if self.p_id == self.id:
             print("Enviando resposta")
             client_dht = Node(request.ip, request.port, request.id)
             client_dht.join_response(self.id, self.ip, self.port, self.id, self.ip, self.port)
@@ -109,9 +119,15 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         self.n_port = request.next_port 
         self.p_id  = request.pre_id 
         self.p_ip = request.pre_ip
-        self.p_port = request.pre_port 
+        self.p_port = request.pre_port
         client_dht = Node(self.ip, self.port, self.id)
         client_dht.update_previous(self.p_ip, self.p_port, self.p_id)
+        # if self.n_id != self.p_id:
+        #     client_dht = Node(self.ip, self.port, self.id)
+        #     client_dht.update_previous(self.p_ip, self.p_port, self.p_id)
+        # else:
+        #     client_dht = Node(self.ip, self.port, self.id)
+        #     client_dht.update_previous(self.ip, self.port, self.id)
         return empty_pb2.Empty()
     
     def uptade_next_node_params(self, request, context):
@@ -127,32 +143,55 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         self.p_ip = request.ip 
         self.p_port = request.port
         return empty_pb2.Empty()
+    
+    def store_file(self, request, context):
+        print("Recebendo arquivo")
+        if self.p_id == 0:
+            print("Salvando arquivo")
+            save_file(self.id, request.id, request.data)
+        elif request.id > self.p_id and request.id < self.id:
+            print("Salvando arquivo")
+            save_file(self.id, request.id, request.data)         
+        elif self.p_id > request.id and request.id < self.id:
+            print("Salvando arquivo")
+            save_file(self.id, request.id, request.data)
+        else:
+            print("Encaminhando arquivo")
+            client_dht = Node(self.ip, self.port, self.id)
+            print("1")
+            client_dht.update_next_params(self.n_ip, self.n_port, self.n_id)
+            print("2")
+            client_dht.send_file(request.data)
+        return empty_pb2.Empty()
 
 
 class Node():
     def __init__(self, ip, port, id):
         self.ip = ip
         self.port = port
-        self.id = id
+        self.id = id    
         self.params_map = {'ip' : ip, 
                            'port' : port, 
                            'id' : id, 
-                           'n_id' : 0, 
+                           'n_id' : id,
                            'n_ip' : "", 
                            'n_port' : "", 
-                           'p_id' : 0, 
+                           'p_id' : id, 
                            'p_ip' : "", 
                            'p_port' : ""}
-
-        
 
     def update_params(self):
         self.params_map = self.servicer.get_params()
 
-  
+    def update_next_params(self, ip, port, id):
+        self.params_map["n_ip"] = ip
+        self.params_map["n_port"] = port
+        self.params_map["n_id"] = id
 
     def print_stat(self):
-        self.servicer.print_all()
+        print("NODE: "+  str(self.id))
+        print("Next node id: " + str(self.params_map["n_id"]) + " adress: "+ self.params_map["n_ip"] + self.params_map["n_port"])
+        print("Previuos node id: " + str(self.params_map["p_id"]) + " adress: "+ self.params_map["p_ip"] + self.params_map["p_port"])
 
     def start(self):
         self.grpc_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
@@ -226,13 +265,28 @@ class Node():
             stub = dht_pb2_grpc.DHTStub(channel)
             stub.uptade_previuos_node_params(to_next)
 
+    def send_file(self, data):
+        print(data)
+        print("Arquivo" + self.params_map["n_ip"] + self.params_map["n_port"])
+        with grpc.insecure_channel(self.params_map["n_ip"] + self.params_map["n_port"]) as channel:
+            stub = dht_pb2_grpc.DHTStub(channel)
+            id = hash_helper(data)
+            file = dht_pb2.File(id = id, data = data)
+            stub.store_file(file)
+   
+
+
+def open_file():
+    with open('dummy.txt', 'r') as file:
+        content = file.read()
+        return content
 
 if __name__ == "__main__":    
 
     # ip = input("Entre com IP ")
     ip = "localhost:"
     port  = input("Entre com a porta ")
-    id = hash_helper(ip, port)
+    id = hash_helper(ip+port)
     #id = int(input("Entre com o ID do node "))
 
     client_dht = Node(ip, port, id)
@@ -247,8 +301,13 @@ if __name__ == "__main__":
 
     try:
         while True:
-            time.sleep(20)
+            time.sleep(10)
+            client_dht.update_params()
             client_dht.print_stat()
+            if input("Enviar arquivo Y/n") == "Y":
+                file = open_file()
+                client_dht.update_params()
+                client_dht.send_file(file)
     except KeyboardInterrupt:
         client_dht.leave_dht()
         
