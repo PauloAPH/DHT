@@ -119,6 +119,39 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         self.p_ip = request.ip 
         self.p_port = request.port
         return empty_pb2.Empty()
+    
+    def store_file(self, request, context):
+        print("No " + request.port + " tentando entrar na rede")
+        if self.p_id == 0:
+            print("Enviando resposta")
+            client_dht = Client(request.ip, request.port, request.id)
+            client_dht.join_response(self.id, self.ip, self.port, self.id, self.ip, self.port)
+            self.p_id = request.id
+            self.p_ip =  request.ip
+            self.p_port = request.port
+            self.print_all()
+
+        elif request.id > self.p_id and request.id < self.id:
+            print("Enviando resposta 2")
+            client_dht = Client(request.ip, request.port, request.id)
+            client_dht.join_response(self.id, self.ip, self.port, self.p_id, self.p_ip, self.p_port)
+            self.p_id = request.id
+            self.p_ip =  request.ip
+            self.p_port = request.port           
+
+        elif  self.p_id > self.id and request.id > self.id:
+            print("Enviando resposta 3")
+            client_dht = Client(request.ip, request.port, request.id)
+            client_dht.join_response(self.id, self.ip, self.port, self.p_id, self.p_ip, self.p_port)
+            self.p_id = request.id
+            self.p_ip =  request.ip
+            self.p_port = request.port  
+
+        else:
+            print("Encaminhando req")
+            client_dht = Client(request.ip, request.port, request.id)
+            client_dht.join_dht(self.n_ip, self.n_port)
+        return empty_pb2.Empty()
 
 
 class Client():

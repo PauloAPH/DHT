@@ -15,7 +15,7 @@
 
 from concurrent import futures
 import time
-
+import hashlib
 import grpc
 import logging
 
@@ -24,6 +24,12 @@ from google.protobuf import empty_pb2
 
 from protos import dht_pb2
 from protos import dht_pb2_grpc
+
+
+def hash_helper(ip, port):
+    id = int.from_bytes(hashlib.sha256((ip+port).encode('utf-8')).digest()[:4], 'little')
+    print(id)
+    return id
 
 class DHTServicer(dht_pb2_grpc.DHTServicer):
     """Provides methods that implement functionality of DHT server."""
@@ -42,6 +48,7 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         self.p_port = ""
 
     def print_all(self):
+        print("NODE: "+  str(self.id))
         print("Next node id: " + str(self.n_id) + " adress: "+ self.n_ip + self.n_port)
         print("Previuos node id: " + str(self.p_id) + " adress: "+ self.p_ip + self.p_port)
 
@@ -175,7 +182,7 @@ class Node():
             for port in ports:
                 with grpc.insecure_channel(port) as channel:
                     stub = dht_pb2_grpc.DHTStub(channel)
-                    node = dht_pb2.Join(ip = "localhost:", port = self.port, id = int(self.id))
+                    node = dht_pb2.Join(ip = "localhost:", port = self.port, id = self.id)
                     try:
                         response = stub.hello(node)
                     except grpc.RpcError as rpc_error:
@@ -225,7 +232,8 @@ if __name__ == "__main__":
     # ip = input("Entre com IP ")
     ip = "localhost:"
     port  = input("Entre com a porta ")
-    id = int(input("Entre com o ID do node "))
+    id = hash_helper(ip, port)
+    #id = int(input("Entre com o ID do node "))
 
     client_dht = Node(ip, port, id)
     response = client_dht.send_hello()

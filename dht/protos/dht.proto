@@ -31,6 +31,7 @@ service DHT {
 
   rpc uptade_previuos_node_params(Join) returns (google.protobuf.Empty) {}
 
+  rpc store_file(File) returns (google.protobuf.Empty) {}
 }
 
 // enum Tipo{
@@ -41,16 +42,19 @@ service DHT {
 message Join {
   string ip = 1;
   string port = 2;
-  int32 id = 3; 
+  int64 id = 3; 
 }
 
 message JoinOk {
-  int32 next_id = 1;
+  int64 next_id = 1;
   string next_ip = 2;
   string next_port = 3;
-  int32 pre_id = 4;
+  int64 pre_id = 4;
   string pre_ip = 5;
   string pre_port = 6;
 }
 
-
+message File {
+ int64 id = 1;
+ string data = 2;
+}
