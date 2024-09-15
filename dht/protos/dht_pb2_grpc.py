@@ -71,6 +71,16 @@ class DHTStub(object):
                 request_serializer=protos_dot_dht__pb2.File.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
+        self.ask_file = channel.unary_unary(
+                '/DHT.DHT/ask_file',
+                request_serializer=protos_dot_dht__pb2.File.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.recive_file = channel.unary_unary(
+                '/DHT.DHT/recive_file',
+                request_serializer=protos_dot_dht__pb2.File.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
 
 
 class DHTServicer(object):
@@ -113,6 +123,18 @@ class DHTServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ask_file(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def recive_file(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DHTServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -143,6 +165,16 @@ def add_DHTServicer_to_server(servicer, server):
             ),
             'store_file': grpc.unary_unary_rpc_method_handler(
                     servicer.store_file,
+                    request_deserializer=protos_dot_dht__pb2.File.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'ask_file': grpc.unary_unary_rpc_method_handler(
+                    servicer.ask_file,
+                    request_deserializer=protos_dot_dht__pb2.File.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'recive_file': grpc.unary_unary_rpc_method_handler(
+                    servicer.recive_file,
                     request_deserializer=protos_dot_dht__pb2.File.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
@@ -308,6 +340,60 @@ class DHT(object):
             request,
             target,
             '/DHT.DHT/store_file',
+            protos_dot_dht__pb2.File.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ask_file(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/DHT.DHT/ask_file',
+            protos_dot_dht__pb2.File.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def recive_file(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/DHT.DHT/recive_file',
             protos_dot_dht__pb2.File.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,

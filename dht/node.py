@@ -36,9 +36,19 @@ def save_file(node_id, file_id, data):
     with open(file_path, 'w') as file:
         file.write(data)
 
+def open_dht_file(node_id, file_id):
+    file_name = str(file_id) + ".txt"
+    folder = "DHT_NODE_" + str(node_id)
+    file_path = os.path.join(folder, file_name)
+    return open_file(file_path)
+    
+def open_file(file_path):
+    with open(file_path, 'r') as file:
+        content = file.read()
+        return content
+
 def hash_helper(data):
     id = int.from_bytes(hashlib.sha256(data.encode('utf-8')).digest()[:4], 'little')
-    print(id)
     return id
 
 class DHTServicer(dht_pb2_grpc.DHTServicer):
@@ -122,12 +132,6 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         self.p_port = request.pre_port
         client_dht = Node(self.ip, self.port, self.id)
         client_dht.update_previous(self.p_ip, self.p_port, self.p_id)
-        # if self.n_id != self.p_id:
-        #     client_dht = Node(self.ip, self.port, self.id)
-        #     client_dht.update_previous(self.p_ip, self.p_port, self.p_id)
-        # else:
-        #     client_dht = Node(self.ip, self.port, self.id)
-        #     client_dht.update_previous(self.ip, self.port, self.id)
         return empty_pb2.Empty()
     
     def uptade_next_node_params(self, request, context):
@@ -146,7 +150,7 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
     
     def store_file(self, request, context):
         print("Recebendo arquivo")
-        if self.p_id == 0:
+        if self.p_id == self.id:
             print("Salvando arquivo")
             save_file(self.id, request.id, request.data)
         elif request.id > self.p_id and request.id < self.id:
@@ -158,12 +162,28 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         else:
             print("Encaminhando arquivo")
             client_dht = Node(self.ip, self.port, self.id)
-            print("1")
             client_dht.update_next_params(self.n_ip, self.n_port, self.n_id)
-            print("2")
-            client_dht.send_file(request.data)
+            client_dht.store_file(request.data)
+        return empty_pb2.Empty()
+        
+    def ask_file(self, request, context):
+        print("Recebendo requisição de arquivo")
+        if self.p_id == self.id or (request.id > self.p_id and request.id < self.id) or (self.p_id > request.id and request.id < self.id):
+            file = open_dht_file(self.id, request.id)     
+            origin = request.origin
+            client_dht = Node(self.ip, self.port, self.id)
+            client_dht.send_file_to_request(file, origin)
+        else:
+            print("Encaminhando requisição de arquivo")
+            client_dht = Node(self.ip, self.port, self.id)
+            client_dht.update_next_params(self.n_ip, self.n_port, self.n_id)
+            client_dht.ask_file(request.id, request.origin)
         return empty_pb2.Empty()
 
+    def recive_file(self, request, context):
+        print("Arquivo recebido:")
+        print(request.data)
+        return empty_pb2.Empty()
 
 class Node():
     def __init__(self, ip, port, id):
@@ -232,22 +252,20 @@ class Node():
                             ok = 1
                             break
             if ok == 0:
-                print("nenhum nó encontrado, iniciando dht")
+                print("Nenhum nó encontrado, iniciando dht")
                 return ""
             else:
-                print("no encontrado" + port_ok)
+                print("No encontrado" + port_ok)
                 return port_ok
 
     def join_dht(self, ip, port):
-        print(ip+port)
         with grpc.insecure_channel(ip+port) as channel:
             stub = dht_pb2_grpc.DHTStub(channel)
-            node = dht_pb2.Join(ip = "localhost:", port = self.port, id = self.id)
+            node = dht_pb2.Join(ip = self.ip, port = self.port, id = self.id)
             stub.try_to_join(node)
 
 
     def join_response(self, n_id, n_ip, n_port, p_id, p_ip, p_port):
-        print(self.ip + self.port)
         with grpc.insecure_channel(self.ip + self.port) as channel:
             stub = dht_pb2_grpc.DHTStub(channel)
             join_data = dht_pb2.JoinOk(next_id = n_id, next_ip = n_ip, next_port = n_port, pre_id = p_id, pre_ip = p_ip, pre_port = p_port)
@@ -265,21 +283,29 @@ class Node():
             stub = dht_pb2_grpc.DHTStub(channel)
             stub.uptade_previuos_node_params(to_next)
 
-    def send_file(self, data):
-        print(data)
-        print("Arquivo" + self.params_map["n_ip"] + self.params_map["n_port"])
+    def store_file(self, data):
         with grpc.insecure_channel(self.params_map["n_ip"] + self.params_map["n_port"]) as channel:
             stub = dht_pb2_grpc.DHTStub(channel)
             id = hash_helper(data)
             file = dht_pb2.File(id = id, data = data)
             stub.store_file(file)
+
+    def ask_file(self, file_id, origin):
+        file = dht_pb2.File(id = file_id, origin = origin)
+        with grpc.insecure_channel(self.params_map["n_ip"] + self.params_map["n_port"]) as channel:
+            stub = dht_pb2_grpc.DHTStub(channel)
+            stub.ask_file(file)
+
+    def ask_file_dht(self, file_id):
+        origin =  dht_pb2.Join(ip = self.ip, port = self.port, id = self.id)
+        self.ask_file(file_id, origin)
+
+    def send_file_to_request(self, file, origin):
+        file = dht_pb2.File(data = file)
+        with grpc.insecure_channel(origin.ip + origin.port) as channel:
+            stub = dht_pb2_grpc.DHTStub(channel)
+            stub.recive_file(file)
    
-
-
-def open_file():
-    with open('dummy.txt', 'r') as file:
-        content = file.read()
-        return content
 
 if __name__ == "__main__":    
 
@@ -304,10 +330,15 @@ if __name__ == "__main__":
             time.sleep(10)
             client_dht.update_params()
             client_dht.print_stat()
-            if input("Enviar arquivo Y/n") == "Y":
-                file = open_file()
+            user = input("Enviar arquivo ou buscar arquivo")
+            if user == "Y":
+                file = open_file('dummy.txt')
                 client_dht.update_params()
-                client_dht.send_file(file)
+                client_dht.store_file(file)
+            elif user == 'b':
+                client_dht.update_params()
+                file_id = int(input("Qual arquivo?"))
+                client_dht.ask_file_dht(file_id)
     except KeyboardInterrupt:
         client_dht.leave_dht()
         
