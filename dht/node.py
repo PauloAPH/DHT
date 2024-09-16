@@ -43,6 +43,8 @@ def open_file(file_path):
         content = file.read()
         return content
 
+
+
 def hash_helper(data):
     id = int.from_bytes(hashlib.sha256(data.encode('utf-8')).digest()[:4], 'little')
     return id
@@ -84,6 +86,7 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         return dht_pb2.Join(ip = "localhost:", port = self.port, id = int(self.id))
     
     def try_to_join(self, request, context):
+        self.print_all()
         print("No " + request.port + " tentando entrar na rede")
         if self.p_id == self.id:
             print("Enviando resposta")
@@ -103,13 +106,21 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
             self.p_port = request.port           
 
         # p = 50 self = 30 r = 40,
-        elif self.p_id > request.id and request.id < self.id:
+        elif request.id > self.p_id and self.p_id > self.id:
             print("Enviando resposta 3")
             client_dht = Node(request.ip, request.port, request.id)
             client_dht.join_response(self.id, self.ip, self.port, self.p_id, self.p_ip, self.p_port)
             self.p_id = request.id
             self.p_ip =  request.ip
             self.p_port = request.port  
+
+        elif request.id < self.id and self.p_id > self.id:
+            print("Enviando resposta 4")
+            client_dht = Node(request.ip, request.port, request.id)
+            client_dht.join_response(self.id, self.ip, self.port, self.p_id, self.p_ip, self.p_port)
+            self.p_id = request.id
+            self.p_ip =  request.ip
+            self.p_port = request.port
 
         else:
             print("Encaminhando req")
@@ -145,14 +156,17 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         return empty_pb2.Empty()
     
     def store_file(self, request, context):
-        print("Recebendo arquivo")
+        print("Recebendo arquivo id = " + str(request.id))
         if self.p_id == self.id:
             print("Salvando arquivo")
             save_file(self.id, request.id, request.data)
         elif request.id > self.p_id and request.id < self.id:
             print("Salvando arquivo")
             save_file(self.id, request.id, request.data)         
-        elif self.p_id > request.id and request.id < self.id:
+        elif request.id > self.p_id and self.p_id > self.id:
+            print("Salvando arquivo")
+            save_file(self.id, request.id, request.data)
+        elif request.id < self.id and self.p_id > self.id:
             print("Salvando arquivo")
             save_file(self.id, request.id, request.data)
         else:
@@ -164,7 +178,7 @@ class DHTServicer(dht_pb2_grpc.DHTServicer):
         
     def ask_file(self, request, context):
         print("Recebendo requisição de arquivo")
-        if self.p_id == self.id or (request.id > self.p_id and request.id < self.id) or (self.p_id > request.id and request.id < self.id):
+        if self.p_id == self.id or (request.id > self.p_id and request.id < self.id) or (request.id > self.p_id and self.p_id > self.id) or (request.id < self.id and self.p_id > self.id):
             file = open_dht_file(self.id, request.id)     
             origin = request.origin
             client_dht = Node(self.ip, self.port, self.id)
@@ -278,6 +292,15 @@ class Node():
         with grpc.insecure_channel(self.params_map['n_ip'] + self.params_map['n_port']) as channel:
             stub = dht_pb2_grpc.DHTStub(channel)
             stub.uptade_previuos_node_params(to_next)
+            folder_path = "DHT_NODE_" + str(self.id)
+            for filename in os.listdir(folder_path):
+                file_path = os.path.join(folder_path, filename)
+                if os.path.isfile(file_path):
+                    data = open_file(file_path)
+                    id = hash_helper(data)
+                    file = dht_pb2.File(id = id, data = data)
+                    stub = dht_pb2_grpc.DHTStub(channel)
+                    stub.store_file(file)
 
     def store_file(self, data):
         with grpc.insecure_channel(self.params_map["n_ip"] + self.params_map["n_port"]) as channel:

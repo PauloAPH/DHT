@@ -38,10 +38,6 @@ Quando um novo nó deseja entrar na rede DHT o novo nó utiliza dhtList.txt para
  ```
  pip install grpcio-tools 
 ```
-#### Comando para instalar psycopg2
- ```
- pip install psycopg2-binary
-```
 #### Gerar protobuf e stubs em python
 ```
  python3 -m grpc_tools.protoc -I. --python_out=.  --grpc_python_out=.  protos/dht.proto
