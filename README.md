@@ -24,6 +24,19 @@ Quando um novo nó deseja entrar na rede DHT o novo nó utiliza dhtList.txt para
 
 ### Leave
 
+Durante a operação de leave() o nó informa a rede que irá sair da rede, o primeiro passo é informar seus vizinhos, atualizando o nó anterior do seu nó posterior com o id do seu nó anterior.
+
+<img src="figures/4.png">
+
+Atualizando o nó posterior do seu nó anterior com o id do seu nós posteior.
+
+<img src="figures/5.png">
+
+Por fim tranfere os seus arquivos para o seu nó posteior.
+
+
+<img src="figures/6.png">
+
 ### Store
 
 ### Retrive
